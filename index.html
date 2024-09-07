@@ -175,8 +175,8 @@ function moveFigureEight() {
     clearAnimation();
     currentAnimation = moveFigureEight;
 
-    const centerX = 50;  // Центр контейнера по оси X
-    const centerY = 50;  // Центр контейнера по оси Y
+    const centerX = 50;
+    const centerY = 50;  
     const radiusX = (radius-25) * 1.4;  
     const radiusY = radius-25;  
     
@@ -203,8 +203,8 @@ function moveFigureEight() {
 }
 
 document.querySelector('button').addEventListener('click', () => {
-    isClockwise = !isClockwise;  // Меняем направление
-    moveFigureEight();  // Перезапуск анимации с новым направлением
+    isClockwise = !isClockwise;
+    moveFigureEight();
 });
 
 function moveHorizontal() {
@@ -294,12 +294,12 @@ function moveZ() {
     ball.style.transform = 'translate(0, 0)';
     
     animation = ball.animate([
-        { top: '0%', left: '0%' },   // Начальная точка (левый верхний угол)
-        { top: '0%', left: '100%' }, // Верхний правый угол
-        { top: '100%', left: '0%' }, // Левый нижний угол
-        { top: '100%', left: '100%' }, // Правый нижний угол
-        { top: '100%', left: '0%' }, // Возвращаемся к левому нижнему углу
-        { top: '0%', left: '100%' }, // Возвращаемся к верхнему правому углу
+        { top: '0%', left: '0%' },
+        { top: '0%', left: '100%' },
+        { top: '100%', left: '0%' },
+        { top: '100%', left: '100%' },
+        { top: '100%', left: '0%' },
+        { top: '0%', left: '100%' },
         { top: '0%', left: '0%' } 
     ], {
         duration: 11000 / speed,
@@ -366,7 +366,6 @@ function toggleSquareDirection() {
     moveSquare();
 }
 
-// Запуск анимации по кругу по умолчанию
 moveCircle();
 
 
