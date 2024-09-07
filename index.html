@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moving Ball with Controls</title>
+</head>
+<body>
+
+    <style>
+        body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+.container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin-bottom: 200px;
+    box-shadow: inset #ccc;
+}
+
+.ball {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: black;
+    border-radius: 50%;
+
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+}
+
+.control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+input[type="range"] {
+    width: 200px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+    </style>
+
+<div class="container">
+    <div id="ball" class="ball"></div>
+</div>
+
+<div class="controls">
+    <div class="control">
+        <label for="speed">Speed:</label>
+        <input type="range" id="speed" min="1" max="10" value="5">
+    </div>
+    <div class="control">
+        <label for="radius">Radius:</label>
+        <input type="range" id="radius" min="50" max="200" value="100">
+    </div>
+    <div class="control">
+        <label for="ballColor">Ball Color:</label>
+        <input type="color" id="ballColor" value="#000000">
+    </div>
+</div>
+
+<div class="buttons">
+    <button onclick="moveFigureEight()">Бесконечность</button>
+    <button onclick="moveHorizontal()">По горизонтали</button>
+    <button onclick="moveVertical()">По вертикали</button>
+    <button onclick="moveDiagonalBottomLeftToTopRight()">Диагональ</button>
+    <button onclick="moveDiagonalTopLeftToBottomRight()">Диагональ отраженная</button>
+    <button onclick="toggleDirection()">По кругу</button>
+    <button onclick="moveZ()">Z</button>
+    <button onclick="moveReflectedZ()">Отраженная Z</button>
+    <button onclick="toggleSquareDirection()">Квадрат</button>
+</div>
+
+<!-- <script src="js/circle.js"></script> -->
+<script>
+
+const ball = document.getElementById('ball');
+const speedSlider = document.getElementById('speed');
+const radiusSlider = document.getElementById('radius');
+const ballColorPicker = document.getElementById('ballColor');
+
+
+let speed = speedSlider.value;
+let radius = radiusSlider.value;
+let animation;
+
+speedSlider.addEventListener('input', () => {
+    speed = speedSlider.value;
+    updateAnimation();
+});
+
+radiusSlider.addEventListener('input', () => {
+    radius = radiusSlider.value;
+    updateAnimation();
+});
+
+let currentAnimation = moveCircle;
+
+function updateAnimation() {
+    if (currentAnimation) {
+        currentAnimation();
+    }
+}
+
+function clearAnimation() {
+    if (animation) {
+        animation.cancel();
+    }
+}
+
+ballColorPicker.addEventListener('input', () => {
+    ball.style.backgroundColor = ballColorPicker.value;
+});
+
+
+//Круг двойным нажатием на кнопку инвертируется движение (clocwise)
+let clockwise = true;
+
+function moveCircle() {
+    clearAnimation();
+    currentAnimation = moveCircle;
+    ball.style.top = '50%';
+    ball.style.left = '50%';
+    ball.style.transform = 'translate(-50%, -50%)';
+    
+    const direction = clockwise ? 360 : -360;
+    
+    animation = ball.animate([
+        { transform: `translate(-50%, -50%) rotate(0deg) translate(${radius}px) rotate(0deg)` },
+        { transform: `translate(-50%, -50%) rotate(${direction}deg) translate(${radius}px) rotate(${direction}deg)` }
+    ], {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        easing: 'linear'
+    });
+}
+
+function toggleDirection() {
+    clockwise = !clockwise;
+    moveCircle();
+}
+
+
+//было сложно результат пока не устраивает TODO оптимизировать анимацию под размер контейнера
+let isClockwise = true;  // Флаг для определения направления движения
+
+function moveFigureEight() {
+    clearAnimation();
+    currentAnimation = moveFigureEight;
+
+    const centerX = 50;  // Центр контейнера по оси X
+    const centerY = 50;  // Центр контейнера по оси Y
+    const radiusX = (radius-25) * 1.4;  
+    const radiusY = radius-25;  
+    
+    const numSteps = 500
+    const keyframes = [];
+
+    for (let i = 0; i <= numSteps; i++) {
+        const t = (i / numSteps) * 2 * Math.PI;  
+        const direction = isClockwise ? 1 : -1; 
+        const x = centerX + radiusX * Math.sin(t) * direction;  
+        const y = centerY + radiusY * Math.sin(2 * t) / 2;
+
+        keyframes.push({
+            left: `${x}%`,
+            top: `${y}%`
+        });
+    }
+
+    animation = ball.animate(keyframes, {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        easing: 'linear'
+    });
+}
+
+document.querySelector('button').addEventListener('click', () => {
+    isClockwise = !isClockwise;  // Меняем направление
+    moveFigureEight();  // Перезапуск анимации с новым направлением
+});
+
+function moveHorizontal() {
+    clearAnimation();
+    currentAnimation = moveHorizontal;
+    ball.style.top = '50%';
+    ball.style.left = '0%';
+    ball.style.transform = 'translate(0, -50%)';
+
+    animation = ball.animate([
+        { left: '0%' },
+        { left: '100%' }
+    ], {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        direction: 'alternate',
+        easing: 'linear'
+    });
+}
+
+function moveVertical() {
+    clearAnimation();
+    currentAnimation = moveVertical;
+    ball.style.top = '0%';
+    ball.style.left = '50%';
+    ball.style.transform = 'translate(-50%, 0)';
+    animation = ball.animate([
+        { top: '0%' },
+        { top: '10%' },
+        { top: '20%' },
+        { top: '30%' },
+        { top: '40%' },
+        { top: '50%' },
+        { top: '60%' },
+        { top: '70%' },
+        { top: '80%' },
+        { top: '90%' },
+        { top: '100%' }
+    ], {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        direction: 'alternate',
+        easing: 'linear'
+    });
+}
+
+function moveDiagonalBottomLeftToTopRight() {
+    clearAnimation();
+    currentAnimation = moveDiagonalBottomLeftToTopRight;
+    ball.style.top = '100%';
+    ball.style.left = '0%';
+    ball.style.transform = 'translate(0, -100%)';
+    animation = ball.animate([
+        { top: '100%', left: '0%' },
+        { top: '0%', left: '100%' },
+
+    ], {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        direction: 'alternate',
+        easing: 'linear'
+    });
+}
+
+function moveDiagonalTopLeftToBottomRight() {
+    clearAnimation();
+    currentAnimation = moveDiagonalTopLeftToBottomRight;
+    ball.style.top = '0%';
+    ball.style.left = '0%';
+    ball.style.transform = 'translate(0, 0)';
+    animation = ball.animate([
+        { top: '0%', left: '0%' },
+        { top: '100%', left: '100%' }
+    ], {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        direction: 'alternate',
+        easing: 'linear'
+    });
+}
+
+function moveZ() {
+    clearAnimation();
+    currentAnimation = moveZ;
+    ball.style.top = '0%';
+    ball.style.left = '0%';
+    ball.style.transform = 'translate(0, 0)';
+    
+    animation = ball.animate([
+        { top: '0%', left: '0%' },   // Начальная точка (левый верхний угол)
+        { top: '0%', left: '100%' }, // Верхний правый угол
+        { top: '100%', left: '0%' }, // Левый нижний угол
+        { top: '100%', left: '100%' }, // Правый нижний угол
+        { top: '100%', left: '0%' }, // Возвращаемся к левому нижнему углу
+        { top: '0%', left: '100%' }, // Возвращаемся к верхнему правому углу
+        { top: '0%', left: '0%' } 
+    ], {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        easing: 'linear'
+    });
+}
+
+function moveReflectedZ() {
+    clearAnimation();
+    currentAnimation = moveReflectedZ;
+    ball.style.top = '0%';
+    ball.style.left = '100%';
+    ball.style.transform = 'translate(0, 0)';
+    
+    animation = ball.animate([
+        { top: '0%', left: '100%' },
+        { top: '0%', left: '0%' },
+        { top: '100%', left: '100%' },
+        { top: '100%', left: '0%' },
+        { top: '100%', left: '100%' },
+        { top: '0%', left: '0%' },
+        { top: '0%', left: '100%' },
+    ], {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        easing: 'linear'
+    });
+}
+
+
+let clockwiseSquare = true;
+
+function moveSquare() {
+    clearAnimation();
+    currentAnimation = moveSquare;
+    ball.style.top = '0%';
+    ball.style.left = '0%';
+    ball.style.transform = 'translate(0, 0)';
+    
+    const keyframes = clockwiseSquare ? [
+        { top: '0%', left: '0%' },
+        { top: '0%', left: '100%' },
+        { top: '100%', left: '100%' },
+        { top: '100%', left: '0%' },
+        { top: '0%', left: '0%' }
+    ] : [
+        { top: '0%', left: '0%' },
+        { top: '100%', left: '0%' },
+        { top: '100%', left: '100%' },
+        { top: '0%', left: '100%' },
+        { top: '0%', left: '0%' }
+    ];
+    
+    animation = ball.animate(keyframes, {
+        duration: 11000 / speed,
+        iterations: Infinity,
+        easing: 'linear'
+    });
+}
+
+function toggleSquareDirection() {
+    clockwiseSquare = !clockwiseSquare;
+    moveSquare();
+}
+
+// Запуск анимации по кругу по умолчанию
+moveCircle();
+
+
+
+
+
+</script>
+
+</body>
+</html>
